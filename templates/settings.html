@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings</title>
+</head>
+<body>
+    <h1>Email Settings</h1>
+    <form method="post" action="/">
+        <label for="email">Your Gmail:</label>
+        <input type="email" id="email" name="email" value="{{ settings['email_credentials'].get('email', '') }}" required>
+        <br>
+        <label for="password">App Password:</label>
+        <input type="password" id="password" name="password" value="{{ settings['email_credentials'].get('password', '') }}" required>
+        <br>
+        <label for="email_list">Recipient Emails (comma-separated):</label>
+        <textarea id="email_list" name="email_list" required>{{ ', '.join(settings['email_list']) }}</textarea>
+        <br>
+        <button type="submit">Save Settings</button>
+    </form>
+    <br>
+    <a href="/send-emails">Send Emails</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+          {% for category, message in messages %}
+            <li><strong>{{ category.capitalize() }}:</strong> {{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

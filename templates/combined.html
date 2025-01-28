@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ImpactHub</title>
+
+  <style>
+    /* SUPER MODERN & SLICK STYLE */
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    /* TOP NAV */
+    .top-nav {
+      background: #212121;
+      color: #fff;
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 9999;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    }
+    .top-nav h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 500;
+    }
+
+    /* LEFT NAV */
+    .left-nav {
+      background: linear-gradient(to bottom, #5b2dec, #8a2be2);
+      color: #fff;
+      width: 260px;
+      position: fixed;
+      top: 60px;
+      bottom: 0;
+      padding: 20px;
+      overflow-y: auto;
+      z-index: 2000; /* behind top nav, but above background */
+    }
+    .left-nav a {
+      display: block;
+      color: #f0f0f0;
+      text-decoration: none;
+      margin: 10px 0;
+      padding: 8px 16px;
+      font-size: 15px;
+      border-radius: 4px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .left-nav a:hover {
+      color: #fff;
+      background-color: rgba(255,255,255,0.1);
+    }
+    .left-nav a.active {
+      background-color: rgba(255,255,255,0.2);
+      font-weight: bold;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      position: relative;
+      z-index: 100;
+      margin-left: 310px;
+      margin-right: 10px;
+      margin-top: 70px;
+      padding: 20px;
+      min-height: 100vh;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      overflow: visible; /* ensure we don't clip tooltips */
+    }
+
+    /* CAMPAIGNS OVERVIEW */
+    .campaigns-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      justify-items: center;
+    }
+    .campaign-card {
+      width: 280px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+
+    /* FORM ROWS */
+    .form-row {
+      position: relative;
+      overflow: visible;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+    }
+    .form-row label {
+      width: 140px;
+      text-align: right;
+      margin-right: 10px;
+    }
+    .form-row input[type="text"],
+    .form-row input[type="number"],
+    .form-row select,
+    .form-row textarea {
+      width: 300px;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border: 1px solid #ccc; 
+      border-radius: 4px;
+    }
+
+    /* GPT QUESTIONS & AI CONTAINERS */
+    .gpt-questions {
+      position: relative;
+      z-index: 100; 
+      overflow: visible;
+    }
+    .input-with-ai {
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: visible;
+    }
+    .ai-container {
+      margin-left: 60px;
+      position: relative;
+      overflow: visible;
+    }
+
+    /* BOLD, LIGHT-GRAY LABELS => for .gpt-questions */
+    .gpt-questions .form-row {
+      margin-bottom: 1.5rem;
+      align-items: flex-start;
+    }
+    .gpt-questions .form-row label {
+      display: block;
+      width: auto;
+      text-align: left;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #3c3c3c;
+      font-size: 16px;
+      line-height: 1.5;
+      background: #f6f8fa;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      min-width: 500px;
+    }
+    .gpt-questions .form-row input,
+    .gpt-questions .form-row textarea {
+      width: 320px;
+    }
+
+    /* BUTTONS */
+    a.btn, button.btn {
+      display: inline-block;
+      padding: 10px 16px;
+      background-color: #3f51b5;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 5px 0;
+      transition: background-color 0.3s ease;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+    a.btn:hover, button.btn:hover {
+      background-color: #2c3e9f;
+    }
+    .btn-dark {
+      background-color: #212121;
+    }
+    .btn-dark:hover {
+      background-color: #121212;
+    }
+
+    /* ALERT MESSAGES (flash) */
+    .alert {
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+    }
+    .alert-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .alert-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    /* SPARKLE BUTTONS */
+    .sparkle-button {
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .sparkle-button button {
+      opacity: 1;
+      --active: 0.6;
+      --cut: 0.1em;
+      --bg:
+        radial-gradient(40% 50% at center 100%, rgba(91,45,236,0.2), transparent),
+        radial-gradient(80% 100% at center 120%, rgba(138,43,226,0.2), transparent),
+        linear-gradient(to right, #5b2dec, #8a2be2);
+      background: var(--bg);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 500;
+      border: 0;
+      cursor: pointer;
+      padding: 0.3em 0.6em;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3em;
+      white-space: nowrap;
+      border-radius: 100px;
+      position: relative;
+      min-width: 0;
+
+      box-shadow:
+        0 0 calc(var(--active)*1em) calc(var(--active)*0.5em) rgba(91,45,236,0.3),
+        0 0.05em 0 0 rgba(91,45,236,0.35) inset,
+        0 -0.05em 0 0 rgba(91,45,236,0.25) inset;
+
+      transition: box-shadow 0.25s, transform 0.25s, background 0.25s;
+      transform: scale(1);
+    }
+    .sparkle-button button:hover,
+    .sparkle-button button:focus-visible {
+      --active: 0.8;
+    }
+    .sparkle-button button:active {
+      transform: scale(0.98);
+    }
+    .sparkle-button button:before {
+      content: "";
+      position: absolute;
+      inset: -0.25em;
+      z-index: -1;
+      border-radius: 100px;
+      opacity: 1;
+      transition: opacity 0.25s;
+    }
+    .sparkle-button .spark {
+      position: absolute;
+      inset: 0;
+      border-radius: 100px;
+      rotate: 0deg;
+      overflow: hidden;
+      mask: linear-gradient(white, transparent 50%);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .sparkle-button.loading .spark {
+      animation: flip 3.6s infinite steps(2,end);
+      opacity: 1;
+    }
+    @keyframes flip {
+      to {
+        rotate: 360deg;
+      }
+    }
+    .sparkle-button .spark:before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      aspect-ratio: 1;
+      top: 0%;
+      left: 50%;
+      translate: -50% -15%;
+      rotate: 0;
+      background: conic-gradient(from 0deg, transparent 0 340deg, white 360deg);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .sparkle-button.loading .spark:before {
+      animation: rotate 1.8s linear infinite both;
+      opacity: calc(var(--active)+0.6);
+    }
+    @keyframes rotate {
+      to {
+        transform: rotate(90deg);
+      }
+    }
+    .sparkle-button .spark:after {
+      content: "";
+      position: absolute;
+      inset: var(--cut);
+      border-radius: 100px;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .sparkle-button.loading .spark:after {
+      opacity: 1;
+    }
+    .sparkle-button .backdrop {
+      position: absolute;
+      inset: var(--cut);
+      background: var(--bg);
+      border-radius: 100px;
+      transition: background 0.25s;
+    }
+    .sparkle-button .particle-pen {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0; left: 0;
+      -webkit-mask: radial-gradient(white, transparent 60%);
+      z-index: -1;
+      opacity: var(--active,1);
+      transition: opacity 0.25s;
+    }
+    .sparkle-button .particle {
+      fill: white;
+      position: absolute;
+      aspect-ratio: 1;
+      animation: float-out calc(var(--duration,6)*1s)
+                 calc(var(--delay,1)*-1s)
+                 infinite linear;
+      transform-origin: var(--origin-x,100%) var(--origin-y,100%);
+      animation-play-state: paused;
+    }
+    .sparkle-button .particle:nth-of-type(even) {
+      animation-direction: reverse;
+    }
+    @keyframes float-out {
+      to {
+        rotate: 360deg;
+      }
+    }
+    .sparkle-button .text {
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      background: none;
+      transition: color 0.25s;
+      position: relative;
+      z-index: 2;
+    }
+
+    /*
+     * AI TOOLTIP => Vibrant blur effect
+     */
+    .ai-tooltip {
+      display: none;
+      position: absolute;
+      left: calc(100% + 8px);
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      padding: 8px;
+      font-size: 12px;
+      color: black;
+      z-index: 999999999;
+      min-width: 500px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .ai-container.show-tooltip .ai-tooltip {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .suggestion-item {
+      margin: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 3px;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 4px 6px;
+      transition: background-color 0.2s ease;
+    }
+    .suggestion-item:hover {
+      background: #efefef;
+    }
+    .sugg-text {
+      flex: 1;
+    }
+    .hide {
+      visibility: hidden;
+      width: 80px;
+    }
+
+    /* Label styles for Conservative, Realistic, Ambitious */
+    .sugg-label.label-conservative {
+      background: rgba(0,128,0,0.15);
+      color: #006600;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .sugg-label.label-realistic {
+      background: rgba(255,165,0,0.15);
+      color: #996600;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .sugg-label.label-ambitious {
+      background: rgba(255,0,0,0.15);
+      color: #cc0000;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* BASIC MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999999;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: #f44336;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+    .close-modal:hover {
+      background: #d32f2f;
+    }
+
+    /* fill-all-mode tooltip, multi-column */
+    .ai-container.fill-all-mode .ai-tooltip {
+      display: flex;
+      flex-wrap: wrap;
+      max-height: 150px;
+      overflow-y: auto;
+      gap: 3px;
+      align-items: flex-start;
+      min-width: 600px;
+    }
+    .ai-container.fill-all-mode .suggestion-item {
+      width: 150px;
+      margin: 6px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-nav">
+    <h1>ImpactHub</h1>
+  </div>
+  <div class="left-nav">
+    <a href="{{ url_for('campaign_overview') }}">Campaigns</a>
+    <a href="{{ url_for('analytics') }}">Analytics</a>
+    <a href="{{ url_for('email_center') }}">Email Center</a>
+    <a href="{{ url_for('settings') }}">Settings</a>
+  </div>
+
+  <div class="main-content">
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% if page == 'main' %}
+      <h2>Welcome to ImpactHub</h2>
+      <p>Landing page content here...</p>
+
+    {% elif page == 'campaign_overview' %}
+      <h2>Campaign Overview</h2>
+      <p><a href="{{ url_for('create_campaign') }}" class="btn btn-dark">+ Create New Campaign</a></p>
+      {% if campaigns %}
+        <div class="campaigns-container">
+          {% for c in campaigns %}
+          <div class="campaign-card">
+            <h3>{{ c.name }}</h3>
+            <p>ID: {{ c.id }}</p>
+            <p>Progress: {{ c.progress_pct }}%</p>
+            <p>Dates: {{ c.start_date }} - {{ c.end_date }}</p>
+            <p style="margin-top: 10px;">
+              <a href="{{ url_for('final_campaign_details', campaign_id=c.id) }}" class="btn">Details</a>
+              <form action="{{ url_for('delete_campaign', campaign_id=c.id) }}" method="POST" style="display:inline;">
+                <button type="submit" class="btn" style="background-color: #f44336;">Delete</button>
+              </form>
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>No campaigns found.</p>
+      {% endif %}
+
+    {% elif page == 'create_campaign' %}
+      <h2>Initial Setup (Round 1)</h2>
+      <div class="gpt-questions">
+        <!-- Round 1 AI Fill All, aligned with single-field AI columns -->
+        <div class="form-row" style="margin-bottom:10px;">
+          <label style="visibility: hidden; width:140px;">&nbsp;</label>
+          <div class="input-with-ai" style="display:flex; align-items:center; position:relative; overflow:visible;">
+            <span style="display:inline-block; width:300px;"></span>
+            <div class="ai-container sparkle-button" id="fillAllAiContainer">
+              <button id="aiFillAllBtn" class="btn" disabled>
+                <span class="spark"></span>
+                <span class="backdrop"></span>
+                <span class="text">AI Fill All</span>
+              </button>
+              <div class="particle-pen"></div>
+            </div>
+          </div>
+        </div>
+
+        <form id="createCampaignForm" method="POST" style="max-width: 600px;">
+          <div class="form-row">
+            <label>Campaign Goal:</label>
+            <input id="campaign_goal" type="text" name="campaign_goal" required />
+          </div>
+
+          <div class="form-row">
+            <label>Campaign Name:</label>
+            <div class="input-with-ai" id="cnContainer">
+              <input id="campaign_name" type="text" name="campaign_name" required />
+              <div class="ai-container sparkle-button" id="cnAiContainer">
+                <button type="button" class="ai-btn" data-field="campaign_name" disabled>
+                  <span class="spark"></span>
+                  <span class="backdrop"></span>
+                  <span class="text">AI Fill</span>
+                </button>
+                <div class="particle-pen"></div>
+                <div class="ai-tooltip"></div>
+              </div>
+            </div>
+          </div>
+          <hr/>
+
+          <!-- Start Date row -->
+          <div class="form-row">
+            <label>Start Date:</label>
+            <select id="start_date_select" name="start_date_type">
+              <option value="">-- Select Type --</option>
+              <option value="days">Days from now</option>
+              <option value="weeks">Weeks from now</option>
+              <option value="months">Months from now</option>
+              <option value="exact">Exact Date</option>
+            </select>
+            <select id="start_date_quantity" name="start_date_quantity" class="hide"></select>
+            <button type="button" id="start_date_modal_btn" class="btn hide pick-date-btn">Pick Date</button>
+            <input type="hidden" id="start_date_value" name="start_date" />
+          </div>
+          <hr/>
+
+          <!-- End Date row -->
+          <div class="form-row">
+            <label>End Date:</label>
+            <select id="end_date_select" name="end_date_type">
+              <option value="">-- Select Type --</option>
+              <option value="days">Days from now</option>
+              <option value="weeks">Weeks from now</option>
+              <option value="months">Months from now</option>
+              <option value="exact">Exact Date</option>
+            </select>
+            <select id="end_date_quantity" name="end_date_quantity" class="hide"></select>
+            <button type="button" id="end_date_modal_btn" class="btn hide pick-date-btn">Pick Date</button>
+            <input type="hidden" id="end_date_value" name="end_date" />
+          </div>
+          <hr/>
+
+          <div class="form-row">
+            <label>Objective:</label>
+            <div class="input-with-ai" id="objContainer">
+              <input id="objective" type="text" name="objective" placeholder="Raise funds, etc." required />
+              <div class="ai-container sparkle-button" id="objAiContainer">
+                <button type="button" class="ai-btn" data-field="objective" disabled>
+                  <span class="spark"></span>
+                  <span class="backdrop"></span>
+                  <span class="text">AI Fill</span>
+                </button>
+                <div class="particle-pen"></div>
+                <div class="ai-tooltip"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label>Target Audience:</label>
+            <div class="input-with-ai" id="taContainer">
+              <input id="target_audience" type="text" name="target_audience" placeholder="Local donors, volunteers" />
+              <div class="ai-container sparkle-button" id="taAiContainer">
+                <button type="button" class="ai-btn" data-field="target_audience" disabled>
+                  <span class="spark"></span>
+                  <span class="backdrop"></span>
+                  <span class="text">AI Fill</span>
+                </button>
+                <div class="particle-pen"></div>
+                <div class="ai-tooltip"></div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" style="margin-top:16px;">Submit & Generate Round 2</button>
+        </form>
+      </div>
+
+    {% elif page == 'gpt_questions' %}
+      <div class="gpt-questions">
+        <h2>Fine-Tuning (Round 2)</h2>
+        <!-- Hidden field to store the round1 campaign_goal -->
+        <input type="hidden" id="round1Goal" value="{{ r1_dict.campaign_goal if r1_dict.campaign_goal else '' }}">
+
+        <!-- Round 2 AI Fill All, aligned with single-field AI columns -->
+        <div class="form-row" style="margin-bottom:10px;">
+          <label style="visibility: hidden; width:140px;">&nbsp;</label>
+          <div class="input-with-ai" style="display:flex; align-items:center; position:relative; overflow:visible;">
+            <span style="display:inline-block; width:320px;"></span>
+            <div class="ai-container sparkle-button" id="fillAllAiContainerRound2">
+              <button id="aiFillAllBtnRound2" class="btn">
+                <span class="spark"></span>
+                <span class="backdrop"></span>
+                <span class="text">AI Fill All</span>
+              </button>
+              <div class="particle-pen"></div>
+            </div>
+          </div>
+        </div>
+
+        {% if questions %}
+          <form id="round2Form" method="POST" style="max-width:600px;">
+            {% for q in questions %}
+              {% if 'timeline' not in q.label|lower %}
+                <div class="form-row">
+                  <label>{{ q.label }}</label>
+                  <div class="input-with-ai" id="{{ q.field_name }}AiContainer">
+                    {% if q.type == 'text' %}
+                      <input id="{{ q.field_name }}" type="text" name="{{ q.field_name }}" />
+                    {% elif q.type == 'number' %}
+                      <input id="{{ q.field_name }}" type="number" name="{{ q.field_name }}" />
+                    {% elif q.type == 'textarea' %}
+                      <textarea id="{{ q.field_name }}" name="{{ q.field_name }}" rows="3"></textarea>
+                    {% else %}
+                      <input id="{{ q.field_name }}" type="text" name="{{ q.field_name }}" />
+                    {% endif %}
+                    <div class="ai-container sparkle-button">
+                      <button type="button" class="ai-btn" data-field="{{ q.field_name }}">
+                        <span class="spark"></span>
+                        <span class="backdrop"></span>
+                        <span class="text">AI Fill</span>
+                      </button>
+                      <div class="particle-pen"></div>
+                      <div class="ai-tooltip"></div>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn">Submit Round 2 Answers</button>
+          </form>
+        {% else %}
+          <p>No additional questions found.</p>
+        {% endif %}
+      </div>
+
+    {% elif page == 'final_campaign_details' %}
+      <h2>Final Campaign Details</h2>
+      {% if campaign %}
+        <h3>{{ campaign.name }} (ID: {{ campaign.id }})</h3>
+        <p>Progress: {{ campaign.progress_pct }}%</p>
+        <hr/>
+        <h4>Round 1 Data (Initial Setup):</h4>
+        {% if r1 %}
+        <ul>
+          <li><strong>Goal:</strong> {{ r1.campaign_goal }}</li>
+          <li><strong>Objective:</strong> {{ r1.objective }}</li>
+          <li><strong>Target Audience:</strong> {{ r1.target_audience }}</li>
+        </ul>
+        {% else %}
+          <p>No round 1 data yet.</p>
+        {% endif %}
+        <h4>Round 2 Answers (Fine-Tuning):</h4>
+        {% if r2 %}
+        <ul>
+          {% for k, v in r2.items() %}
+            <li><strong>{{ k }}:</strong> {{ v }}</li>
+          {% endfor %}
+        </ul>
+        {% else %}
+          <p>No round 2 answers yet.</p>
+        {% endif %}
+        {% if campaign.campaign_plan %}
+          <hr/>
+          <h4>Campaign Plan (Strategy & Timeline)</h4>
+          <div style="background:#f9f9f9; padding:10px; border-radius:5px; border:1px solid #ccc;">
+            <pre style="white-space: pre-wrap;">{{ campaign.campaign_plan }}</pre>
+          </div>
+        {% endif %}
+        <hr/>
+        <h4>Generate Campaign Emails</h4>
+        <form action="{{ url_for('ai_generate_emails', campaign_id=campaign.id) }}" method="POST">
+          <button type="submit" class="btn">Generate Email Prompts</button>
+        </form>
+
+        <h4>Current Email Prompts</h4>
+        <ul>
+          {% for e in emails %}
+            <li style="margin-bottom:4px;">
+              {{ e }}
+              <!-- 'Send Email' button for each snippet -->
+              <form action="{{ url_for('send_individual_email', campaign_id=campaign.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="email_body" value="{{ e }}">
+                <button type="submit" class="btn">Send Email</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <hr/>
+        <h4>Send the Newsletter Emails</h4>
+        <p>This will send your <strong>email prompts</strong> as a single combined newsletter to everyone in the campaign’s email list.</p>
+        <form action="{{ url_for('send_newsletter_emails', campaign_id=campaign.id) }}" method="POST">
+          <button type="submit" class="btn">Send to Email List</button>
+        </form>
+
+        <hr/>
+        <h4>Generate Campaign Tweets</h4>
+        <form action="{{ url_for('ai_generate_tweets', campaign_id=campaign.id) }}" method="POST">
+          <button type="submit" class="btn">Generate Tweet Prompts</button>
+        </form>
+
+        <h4>Current Tweet Prompts</h4>
+        <ul>
+          {% for t in tweets %}
+            <li style="margin-bottom:4px;">
+              {{ t }}
+              <!-- 'Tweet' button -->
+              <form action="{{ url_for('post_tweet', campaign_id=campaign.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="tweet_text" value="{{ t }}">
+                <button type="submit" class="btn">Tweet</button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <p>You can now set up your email list or view analytics.</p>
+        <p>
+          <a href="{{ url_for('email_list', campaign_id=campaign.id) }}" class="btn">Manage Emails</a>
+          <a href="{{ url_for('campaign_overview') }}" class="btn">Back to Overview</a>
+        </p>
+      {% else %}
+        <p>Campaign not found.</p>
+      {% endif %}
+
+    {% elif page == 'email_list' %}
+      <h2>Manage Email List</h2>
+      {% if campaign %}
+        <p>Enter one or more recipient emails, separated by commas or newlines.</p>
+        <form method="POST" style="max-width:400px;">
+          <textarea name="emails" rows="5" style="width:100%; padding:8px; border:1px solid #ccc; border-radius:4px;"></textarea>
+          <br/>
+          <button type="submit" class="btn" style="margin-top:10px;">Save & Send Emails</button>
+        </form>
+      {% else %}
+        <p>Campaign not found.</p>
+      {% endif %}
+
+    {% elif page == 'email_center' %}
+      <h2>Email Reach-Out Center</h2>
+      <p>Below is a list of all campaigns. Click "Manage Emails" to configure or send messages.</p>
+      {% if campaigns %}
+        <ul>
+          {% for c in campaigns %}
+          <li style="margin-bottom: 8px;">
+            <strong>{{ c.name }}</strong> (ID: {{ c.id }})
+            <a href="{{ url_for('email_list', campaign_id=c.id) }}" class="btn" style="margin-left:10px;">Manage Emails</a>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No campaigns exist yet. <a href="{{ url_for('create_campaign') }}">Create one.</a></p>
+      {% endif %}
+
+    {% elif page == 'send_emails_sim' %}
+      <h2>Simulated Email Sending</h2>
+      {% if links_data %}
+        <table>
+          <thead>
+            <tr>
+              <th>Recipient Email</th>
+              <th>Open Link</th>
+              <th>Click Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in links_data %}
+            <tr>
+              <td>{{ item.email }}</td>
+              <td><a href="{{ item.open_link }}" target="_blank">Open</a></td>
+              <td><a href="{{ item.click_link }}" target="_blank">Pledge</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <p style="margin-top:20px;">
+          <a href="{{ url_for('analytics') }}" class="btn">Go to Analytics</a>
+        </p>
+      {% else %}
+        <p>No email recipients found.</p>
+      {% endif %}
+
+    {% elif page == 'analytics' %}
+      <h2>Analytics Overview</h2>
+      {% if summary %}
+        <table>
+          <thead>
+            <tr>
+              <th>Campaign ID</th>
+              <th>Name</th>
+              <th>Emails Sent</th>
+              <th>Opened</th>
+              <th>Clicked</th>
+              <th>Progress %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in summary %}
+            <tr>
+              <td>{{ c.id }}</td>
+              <td>{{ c.name }}</td>
+              <td>{{ c.total_sent }}</td>
+              <td>{{ c.opened }}</td>
+              <td>{{ c.clicked }}</td>
+              <td>{{ c.progress_pct }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>No campaigns found or no emails sent.</p>
+      {% endif %}
+
+    {% elif page == 'upload_materials' %}
+      <h2>Upload Materials</h2>
+      {% if campaign %}
+        <form method="POST" enctype="multipart/form-data">
+          <label>Select files to upload:</label><br/>
+          <input type="file" name="materials" multiple />
+          <br/><br/>
+          <button type="submit" class="btn">Upload & Generate Prompts</button>
+        </form>
+        {% if materials %}
+          <h3>Existing Materials:</h3>
+          <ul>
+            {% for f in materials %}
+              <li>{{ f.filename }}</li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>No materials found for this campaign.</p>
+        {% endif %}
+      {% else %}
+        <p>Campaign not found.</p>
+      {% endif %}
+
+    {% elif page == 'settings' %}
+      <h2>Settings</h2>
+      <hr/>
+      <!-- EMAIL SETTINGS REMOVED: We rely on local/no-auth sending, so no fields to configure -->
+      <p><em>Email is sent via local mail server (no SMTP credentials needed).</em></p>
+      
+      <hr/>
+      <h3>Twitter Settings</h3>
+      <p>Add a new Twitter account to use for tweeting. You can store multiple sets of credentials here.</p>
+      <form method="POST" style="max-width:400px;">
+        <input type="hidden" name="twitter_config_form" value="1" />
+        <div class="form-row">
+          <label>Name:</label>
+          <input type="text" name="tw_name" placeholder="e.g. My Twitter Bot" required />
+        </div>
+        <div class="form-row">
+          <label>API Key:</label>
+          <input type="text" name="api_key" />
+        </div>
+        <div class="form-row">
+          <label>BARER Token:</label>
+          <input type="text" name="barer_token" />
+        </div>
+        <div class="form-row">
+          <label>API Secret Key:</label>
+          <input type="text" name="api_secret_key" />
+        </div>
+        <div class="form-row">
+          <label>Access Token:</label>
+          <input type="text" name="access_token" />
+        </div>
+        <div class="form-row">
+          <label>Access Token Secret:</label>
+          <input type="text" name="access_token_secret" />
+        </div>
+        <button type="submit" class="btn">Add Twitter Bot</button>
+      </form>
+
+      {% if twitters %}
+        <hr/>
+        <h4>Existing Twitter Configs</h4>
+        <ul>
+        {% for t in twitters %}
+          <li>
+            <strong>{{ t.name }}</strong>
+            <form action="{{ url_for('delete_twitter_config', tw_id=t.id) }}" method="POST" style="display:inline;">
+              <button type="submit" class="btn" style="background-color:#f44336;">Delete</button>
+            </form>
+          </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+        <p>No Twitter configs found.</p>
+      {% endif %}
+
+    {% else %}
+      <h2>Page Not Found</h2>
+      <p>Invalid page or no page parameter was provided.</p>
+    {% endif %}
+  </div>
+
+  <!-- The hidden modal for picking exact date -->
+  <div class="modal-overlay" id="dateModal">
+    <div class="modal-container">
+      <button class="close-modal" id="closeModalBtn">&times;</button>
+      <h3>Pick Exact Date</h3>
+      <input type="date" id="modalDateValue" />
+      <button type="button" class="btn modal-save-btn" id="saveDateBtn">Save Date</button>
+    </div>
+  </div>
+
+  <script>
+    // Utility to show suggestions in a multi-column tooltip
+    function showSuggestionsTooltip(containerId, fieldName, suggestions) {
+      console.log("[CLIENT] showSuggestionsTooltip => containerId=", containerId, 
+                  " fieldName=", fieldName, 
+                  " suggestions=", suggestions);
+
+      const fieldWrapper = document.getElementById(containerId);
+      if (!fieldWrapper) {
+        console.warn("[CLIENT] Container NOT found for ID:", containerId);
+        return;
+      }
+      const aiContainer = fieldWrapper.querySelector('.ai-container');
+      if (!aiContainer) {
+        console.warn("[CLIENT] .ai-container NOT found inside:", containerId);
+        return;
+      }
+
+      const tooltipDiv = aiContainer.querySelector('.ai-tooltip');
+      if (!tooltipDiv) {
+        console.warn("[CLIENT] .ai-tooltip NOT found in .ai-container =>", fieldName);
+        return;
+      }
+
+      // Put the container into "fill-all-mode" => multi-column layout
+      aiContainer.classList.add('fill-all-mode');
+      tooltipDiv.innerHTML = "";
+
+      if (!suggestions || !suggestions.length) {
+        console.warn("[CLIENT] No suggestions returned for field:", fieldName);
+        const noItemDiv = document.createElement('div');
+        noItemDiv.textContent = "No suggestions returned.";
+        tooltipDiv.appendChild(noItemDiv);
+      } else {
+        suggestions.forEach(sugg => {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = "suggestion-item";
+
+          const textSpan = document.createElement('span');
+          textSpan.className = "sugg-text";
+          textSpan.textContent = sugg.text || JSON.stringify(sugg);
+          itemDiv.appendChild(textSpan);
+
+          // If there's a tier => add the appropriate label class
+          if (sugg.tier) {
+            const tierClass = sugg.tier.toLowerCase();
+            const labelSpan = document.createElement('span');
+            labelSpan.className = `sugg-label label-${tierClass}`;
+            labelSpan.textContent = sugg.tier;
+            itemDiv.appendChild(labelSpan);
+          }
+
+          // On click => fill the field, hide the tooltip
+          itemDiv.addEventListener('click', () => {
+            const targetInput = document.getElementById(fieldName);
+            if (targetInput) {
+              targetInput.value = sugg.text || "";
+            }
+            aiContainer.classList.remove('show-tooltip');
+            aiContainer.classList.remove('fill-all-mode');
+          });
+
+          tooltipDiv.appendChild(itemDiv);
+        });
+      }
+
+      aiContainer.classList.add('show-tooltip');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const currentPage = "{{ page }}";
+      console.log("[CLIENT] currentPage =", currentPage);
+
+      function partialDataCollectorRound1() {
+        return {
+          campaign_goal: document.getElementById('campaign_goal')?.value || "",
+          campaign_name: document.getElementById('campaign_name')?.value || "",
+          objective: document.getElementById('objective')?.value || "",
+          target_audience: document.getElementById('target_audience')?.value || "",
+          start_date: document.getElementById('start_date_value')?.value || "",
+          end_date: document.getElementById('end_date_value')?.value || ""
+        };
+      }
+      function partialDataCollectorRound2() {
+        const form = document.getElementById('round2Form');
+        if (!form) return {};
+        const inputs = form.querySelectorAll('[name]');
+        let typed = {};
+        inputs.forEach(i => {
+          typed[i.name] = i.value.trim();
+        });
+        return typed;
+      }
+
+      // Round 1 AI Fill All
+      if (currentPage === "create_campaign") {
+        const campaignGoalInput = document.getElementById('campaign_goal');
+        const aiFillAllBtn = document.getElementById('aiFillAllBtn');
+        const fieldButtons = document.querySelectorAll('.ai-btn[data-field]');
+
+        function checkCampaignGoalInput() {
+          const val = campaignGoalInput.value.trim();
+          if (val.length > 0) {
+            aiFillAllBtn.disabled = false;
+            fieldButtons.forEach(b => b.disabled = false);
+          } else {
+            aiFillAllBtn.disabled = true;
+            fieldButtons.forEach(b => b.disabled = true);
+          }
+        }
+        campaignGoalInput.addEventListener('input', checkCampaignGoalInput);
+        checkCampaignGoalInput();
+
+        aiFillAllBtn.addEventListener('click', async evt => {
+          evt.preventDefault();
+          console.log("[CLIENT] Round1 AI Fill All button clicked.");
+          const sparkleParent = aiFillAllBtn.closest('.sparkle-button');
+          if (sparkleParent) sparkleParent.classList.add('loading');
+
+          try {
+            const userGoal = campaignGoalInput.value.trim();
+            const typedCampaignName = document.getElementById('campaign_name').value.trim();
+            const typedObjective = document.getElementById('objective').value.trim();
+            const typedAudience = document.getElementById('target_audience').value.trim();
+
+            const resp = await fetch('/ai_fill_all', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                campaign_goal: userGoal,
+                typedCampaignName,
+                typedObjective,
+                typedAudience
+              })
+            });
+            const data = await resp.json();
+            console.log("[CLIENT] Round1 FillAll => response:", data);
+
+            if (sparkleParent) sparkleParent.classList.remove('loading');
+
+            if (data.status === 'ok') {
+              const { campaign_name, objective, target_audience } = data.data;
+              if (campaign_name?.length) {
+                showSuggestionsTooltip("cnContainer", "campaign_name", campaign_name);
+              }
+              if (objective?.length) {
+                showSuggestionsTooltip("objContainer", "objective", objective);
+              }
+              if (target_audience?.length) {
+                showSuggestionsTooltip("taContainer", "target_audience", target_audience);
+              }
+            } else {
+              console.error("[CLIENT] Round1 AI fill all error:", data.message);
+            }
+          } catch (error) {
+            console.error("[CLIENT] Round1 fetch error (fill all):", error);
+          }
+        });
+      }
+
+      // Round 2 AI Fill All
+      else if (currentPage === "gpt_questions") {
+        const fillAllBtn2 = document.getElementById('aiFillAllBtnRound2');
+        if (fillAllBtn2) {
+          fillAllBtn2.addEventListener('click', async evt => {
+            evt.preventDefault();
+            console.log("[CLIENT] Round2 AI Fill All button clicked.");
+            const sparkleParent = fillAllBtn2.closest('.sparkle-button');
+            if (sparkleParent) sparkleParent.classList.add('loading');
+
+            try {
+              const typedAnswers = partialDataCollectorRound2();
+              const userGoal = document.getElementById('round1Goal').value || "";
+              console.log("[CLIENT] Round2 typedAnswers =", typedAnswers, " userGoal =", userGoal);
+
+              const resp = await fetch('/ai_fill_all_round2', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  campaign_goal: userGoal,
+                  typedAnswers
+                })
+              });
+              const data = await resp.json();
+              console.log("[CLIENT] Round2 FillAll => response:", data);
+
+              if (sparkleParent) sparkleParent.classList.remove('loading');
+
+              if (data.status === 'ok') {
+                // For each returned field => attempt to show suggestions
+                Object.keys(data.data).forEach(fieldName => {
+                  const suggestions = data.data[fieldName];
+                  console.log("[CLIENT] Attempting showSuggestionsTooltip for field=", fieldName, 
+                              " suggestions=", suggestions);
+                  showSuggestionsTooltip(fieldName + "AiContainer", fieldName, suggestions);
+                });
+              } else {
+                console.error("[CLIENT] Round2 fill all error:", data.message);
+              }
+            } catch (err) {
+              console.error("[CLIENT] Round2 fetch error (fill all):", err);
+              if (sparkleParent) sparkleParent.classList.remove('loading');
+            }
+          });
+        }
+      }
+
+      // Single-field AI Fill => /ai_suggest
+      document.querySelectorAll('.ai-container').forEach(container => {
+        const btn = container.querySelector('.ai-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', async evt => {
+          evt.preventDefault();
+          evt.stopPropagation();
+
+          const wasOpen = container.classList.contains('show-tooltip');
+          if (wasOpen) {
+            container.classList.remove('show-tooltip');
+            container.classList.remove('fill-all-mode');
+            return;
+          } else {
+            // close other open tooltips
+            document.querySelectorAll('.ai-container.show-tooltip').forEach(cc => {
+              cc.classList.remove('show-tooltip');
+              cc.classList.remove('fill-all-mode');
+            });
+          }
+
+          const sparkleParent = btn.closest('.sparkle-button');
+          if (sparkleParent) sparkleParent.classList.add('loading');
+
+          const fieldName = btn.getAttribute('data-field') || "";
+          const targetInput = document.getElementById(fieldName);
+          const typedValue = (targetInput?.value || "").trim();
+          console.log("[CLIENT] Single-field AI Fill => fieldName=", fieldName, 
+                      " typedValue=", typedValue);
+
+          let collected = {};
+          if (currentPage === "create_campaign") {
+            collected = partialDataCollectorRound1();
+          } else if (currentPage === "gpt_questions") {
+            collected = partialDataCollectorRound2();
+          }
+
+          const userGoal = document.getElementById('campaign_goal')?.value 
+                        || document.getElementById('round1Goal')?.value 
+                        || "";
+          collected.campaign_goal = userGoal;
+
+          try {
+            const resp = await fetch("/ai_suggest", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                campaign_goal: userGoal,
+                fieldName,
+                partialData: collected,
+                typedValue
+              })
+            });
+            const data = await resp.json();
+            console.log("[CLIENT] Single-field AI Fill => response:", data);
+
+            if (sparkleParent) sparkleParent.classList.remove('loading');
+
+            const tooltipDiv = container.querySelector('.ai-tooltip');
+            if (!tooltipDiv) {
+              console.warn("[CLIENT] .ai-tooltip not found for container =>", fieldName);
+              return;
+            }
+
+            if (data.status === "ok") {
+              tooltipDiv.innerHTML = "";
+              if (!data.suggestions || !data.suggestions.length) {
+                const noItem = document.createElement('div');
+                noItem.textContent = "No suggestions returned.";
+                tooltipDiv.appendChild(noItem);
+              } else {
+                data.suggestions.forEach(sugg => {
+                  const itemDiv = document.createElement('div');
+                  itemDiv.className = "suggestion-item";
+
+                  const textSpan = document.createElement('span');
+                  textSpan.className = "sugg-text";
+                  textSpan.textContent = sugg.text || sugg;
+                  itemDiv.appendChild(textSpan);
+
+                  if (sugg.tier) {
+                    const tierClass = sugg.tier.toLowerCase();
+                    const labelSpan = document.createElement('span');
+                    labelSpan.className = `sugg-label label-${tierClass}`;
+                    labelSpan.textContent = sugg.tier;
+                    itemDiv.appendChild(labelSpan);
+                  }
+
+                  itemDiv.addEventListener('click', () => {
+                    if (targetInput) {
+                      if (targetInput.type === 'number') {
+                        const numericVal = parseFloat(
+                          (sugg.text || sugg).replace(/[^\d.-]/g, '')
+                        );
+                        targetInput.value = isNaN(numericVal) ? '' : numericVal;
+                      } else {
+                        targetInput.value = sugg.text || sugg;
+                      }
+                    }
+                    container.classList.remove('show-tooltip');
+                    container.classList.remove('fill-all-mode');
+                  });
+
+                  tooltipDiv.appendChild(itemDiv);
+                });
+              }
+              container.classList.add('show-tooltip');
+            } else {
+              console.error("[CLIENT] Single-field AI error:", data.message);
+            }
+          } catch (err) {
+            console.error("[CLIENT] Single-field fetch error:", err);
+          }
+        });
+      });
+
+      // Close tooltips if user clicks outside them
+      document.addEventListener('click', evt => {
+        const aiContainer = evt.target.closest('.ai-container');
+        if (!aiContainer) {
+          document.querySelectorAll('.ai-container.show-tooltip').forEach(c => {
+            c.classList.remove('show-tooltip');
+            c.classList.remove('fill-all-mode');
+          });
+        }
+      });
+
+      // Date picking logic
+      const startTypeSelect = document.getElementById('start_date_select');
+      const startQtySelect  = document.getElementById('start_date_quantity');
+      const startModalBtn   = document.getElementById('start_date_modal_btn');
+      const startValueInput = document.getElementById('start_date_value');
+
+      const endTypeSelect   = document.getElementById('end_date_select');
+      const endQtySelect    = document.getElementById('end_date_quantity');
+      const endModalBtn     = document.getElementById('end_date_modal_btn');
+      const endValueInput   = document.getElementById('end_date_value');
+
+      function handleDateTypeChange(typeSelect, qtySelect, modalBtn, hiddenInput) {
+        if (!typeSelect) return;
+        qtySelect.classList.add('hide');
+        modalBtn.classList.add('hide');
+        qtySelect.innerHTML = '';
+        hiddenInput.value = '';
+
+        const val = typeSelect.value;
+        if (val === 'days') {
+          qtySelect.classList.remove('hide');
+          for (let i=1; i<=30; i++){
+            qtySelect.innerHTML += `<option value="${i}">${i} Day${i>1?'s':''}</option>`;
+          }
+        } else if (val === 'weeks') {
+          qtySelect.classList.remove('hide');
+          for (let i=1; i<=4; i++){
+            qtySelect.innerHTML += `<option value="${i}">${i} Week${i>1?'s':''}</option>`;
+          }
+        } else if (val === 'months') {
+          qtySelect.classList.remove('hide');
+          for (let i=1; i<=12; i++){
+            qtySelect.innerHTML += `<option value="${i}">${i} Month${i>1?'s':''}</option>`;
+          }
+        } else if (val === 'exact') {
+          modalBtn.classList.remove('hide');
+        }
+      }
+
+      if (startTypeSelect) {
+        startTypeSelect.addEventListener('change', () => {
+          handleDateTypeChange(startTypeSelect, startQtySelect, startModalBtn, startValueInput);
+        });
+      }
+      if (endTypeSelect) {
+        endTypeSelect.addEventListener('change', () => {
+          handleDateTypeChange(endTypeSelect, endQtySelect, endModalBtn, endValueInput);
+        });
+      }
+
+      if (startQtySelect) {
+        startQtySelect.addEventListener('change', () => {
+          startValueInput.value = startTypeSelect.value + ':' + startQtySelect.value;
+        });
+      }
+      if (endQtySelect) {
+        endQtySelect.addEventListener('change', () => {
+          endValueInput.value = endTypeSelect.value + ':' + endQtySelect.value;
+        });
+      }
+
+      const modalOverlay = document.getElementById('dateModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const saveDateBtn = document.getElementById('saveDateBtn');
+      const modalDateValue = document.getElementById('modalDateValue');
+
+      let currentDateTarget = null;
+
+      if (startModalBtn) {
+        startModalBtn.addEventListener('click', () => {
+          currentDateTarget = 'start';
+          modalOverlay.style.display = 'flex';
+        });
+      }
+      if (endModalBtn) {
+        endModalBtn.addEventListener('click', () => {
+          currentDateTarget = 'end';
+          modalOverlay.style.display = 'flex';
+        });
+      }
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+          modalOverlay.style.display = 'none';
+        });
+      }
+      if (saveDateBtn) {
+        saveDateBtn.addEventListener('click', () => {
+          const val = modalDateValue.value;
+          if (!val) {
+            alert('Please pick a date or close the modal.');
+            return;
+          }
+          if (currentDateTarget === 'start') {
+            startValueInput.value = val;
+          } else {
+            endValueInput.value = val;
+          }
+          modalOverlay.style.display = 'none';
+          modalDateValue.value = '';
+        });
+      }
+
+      // Sparkle Particles
+      function RANDOM(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+      document.querySelectorAll('.sparkle-button').forEach(sb => {
+        const pen = sb.querySelector('.particle-pen');
+        if (!pen) return;
+        pen.innerHTML = '';
+
+        for (let i = 0; i < 12; i++) {
+          const p = document.createElement('div');
+          p.classList.add('particle');
+          const x = RANDOM(10, 90);
+          const y = RANDOM(10, 90);
+          const dur = RANDOM(6, 20);
+          const del = RANDOM(1, 10);
+          const alph = RANDOM(60, 100) / 100;
+          const ox = Math.random() > 0.5 ? `${RANDOM(200,800)*-1}%` : `${RANDOM(200,800)}%`;
+          const oy = Math.random() > 0.5 ? `${RANDOM(200,800)*-1}%` : `${RANDOM(200,800)}%`;
+          const sz = RANDOM(50,130) / 100;
+          p.setAttribute('style',`
+            width:calc(${sz} * 1rem);
+            --x:${x};
+            --y:${y};
+            --duration:${dur};
+            --delay:${del};
+            --alpha:${alph};
+            --origin-x:${ox};
+            --origin-y:${oy};
+            --size:${sz};
+          `);
+          pen.appendChild(p);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
